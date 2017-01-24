@@ -19,6 +19,9 @@ type slackMsg struct {
 
 //Send a message to slack, returns an error on failure
 func (s *SlackNotify) Send(v ...interface{}) error {
+	if s.URL == "" {
+		return nil
+	}
 	payload, err := json.Marshal(slackMsg{Text: fmt.Sprint(v)})
 	if err != nil {
 		return err
@@ -35,6 +38,9 @@ func (s *SlackNotify) Send(v ...interface{}) error {
 
 //Println sends a message to slack, self logs an error on internal failure
 func (s *SlackNotify) Println(v ...interface{}) {
+	if s.URL == "" {
+		return
+	}
 	payload, err := json.Marshal(slackMsg{Text: fmt.Sprint(v)})
 	if err != nil {
 		log.Println(err.Error())
