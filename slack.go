@@ -6,11 +6,23 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 )
 
 //SlackNotify sends messages to slack
 type SlackNotify struct {
 	URL string
+	c   http.Client
+}
+
+//New sets up a SlackNotify instance ready to use
+func New(url string) *SlackNotify {
+	return &SlackNotify{
+		URL: url,
+		c: http.Client{
+			Timeout: 10 * time.Second,
+		},
+	}
 }
 
 type slackMsg struct {
@@ -28,7 +40,7 @@ func (s *SlackNotify) Send(v ...interface{}) error {
 	}
 	req, _ := http.NewRequest("POST", s.URL, bytes.NewBuffer(payload))
 	req.Header.Add("content-type", "application/json")
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.c.Do(req)
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
 		return fmt.Errorf("Error posting to slack")
@@ -47,7 +59,7 @@ func (s *SlackNotify) Println(v ...interface{}) {
 	}
 	req, _ := http.NewRequest("POST", s.URL, bytes.NewBuffer(payload))
 	req.Header.Add("content-type", "application/json")
-	res, err := http.DefaultClient.Do(req)
+	res, err := s.c.Do(req)
 	defer res.Body.Close()
 	if res.StatusCode != 200 {
 		log.Println("Error posting to slack", res.StatusCode)
