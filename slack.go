@@ -11,8 +11,9 @@ import (
 
 //SlackNotify sends messages to slack
 type SlackNotify struct {
-	URL string
-	c   http.Client
+	URL    string
+	c      http.Client
+	prefix string
 }
 
 //New sets up a SlackNotify instance ready to use
@@ -25,6 +26,11 @@ func New(url string) *SlackNotify {
 	}
 }
 
+//SetPrefix sets prefix that gets prefixed to all messages
+func (s *SlackNotify) SetPrefix(v string) {
+	s.prefix = v
+}
+
 type slackMsg struct {
 	Text string `json:"text"`
 }
@@ -34,7 +40,7 @@ func (s *SlackNotify) Send(v ...interface{}) error {
 	if s.URL == "" {
 		return nil
 	}
-	payload, err := json.Marshal(slackMsg{Text: fmt.Sprint(v)})
+	payload, err := json.Marshal(slackMsg{Text: fmt.Sprint(s.prefix, v)})
 	if err != nil {
 		return err
 	}
@@ -53,7 +59,7 @@ func (s *SlackNotify) Println(v ...interface{}) {
 	if s.URL == "" {
 		return
 	}
-	payload, err := json.Marshal(slackMsg{Text: fmt.Sprint(v)})
+	payload, err := json.Marshal(slackMsg{Text: fmt.Sprint(s.prefix, v)})
 	if err != nil {
 		log.Println(err.Error())
 	}
